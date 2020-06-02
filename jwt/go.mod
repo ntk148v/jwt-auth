@@ -1,4 +1,4 @@
-module github.com/ntk148v/jwt-auth/jwt
+module github.com/adam-hanna/jwt-auth/jwt
 
 go 1.14
 
