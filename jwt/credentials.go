@@ -21,14 +21,11 @@ type credentials struct {
 type credentialsOptions struct {
 	AuthTokenValidTime    time.Duration
 	RefreshTokenValidTime time.Duration
-
-	CheckTokenId TokenIdChecker
-
-	SigningMethodString string
-
-	VerifyOnlyServer bool
-
-	Debug bool
+	CheckTokenId          TokenIdChecker
+	SigningMethodString   string
+	VerifyOnlyServer      bool
+	Debug                 bool
+	DisableCSRF           bool
 }
 
 func (c *credentials) myLog(stoofs interface{}) {
@@ -50,6 +47,7 @@ func (a *Auth) buildCredentialsFromClaims(c *credentials, claims *ClaimsType) *j
 	c.options.VerifyOnlyServer = a.options.VerifyOnlyServer
 	c.options.SigningMethodString = a.options.SigningMethodString
 	c.options.Debug = a.options.Debug
+	c.options.DisableCSRF = a.options.DisableCSRF
 
 	authClaims := *claims
 	authClaims.Csrf = newCsrfString
@@ -164,10 +162,13 @@ func (c *credentials) updateAuthTokenFromRefreshToken() *jwtError {
 }
 
 func (c *credentials) validateAndUpdateCredentials() *jwtError {
-	// first, check that the csrf token matches what's in the jwts
-	err := c.validateCsrfStringAgainstCredentials()
-	if err != nil {
-		return newJwtError(err, 500)
+	var err *jwtError
+	if !c.options.DisableCSRF {
+		// first, check that the csrf token matches what's in the jwts
+		err := c.validateCsrfStringAgainstCredentials()
+		if err != nil {
+			return newJwtError(err, 500)
+		}
 	}
 
 	// next, check the auth token in a stateless manner
