@@ -7,3 +7,6 @@ coverate.out
 jwt/vendor
 
 jwt/Godeps
+
+.vscode/
+.idea/
