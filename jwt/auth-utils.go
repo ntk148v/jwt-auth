@@ -49,10 +49,7 @@ func (a *Auth) extractTokenStringsFromReq(r *http.Request) (string, string, *jwt
 }
 
 func (a *Auth) extractCsrfStringFromReq(r *http.Request) (string, *jwtError) {
-	var csrfString string
-	if !a.options.DisableCSRF {
-		csrfString = r.FormValue(a.options.CSRFTokenName)
-	}
+	csrfString := r.FormValue(a.options.CSRFTokenName)
 
 	if csrfString != "" {
 		return csrfString, nil
@@ -154,9 +151,12 @@ func (a *Auth) buildCredentialsFromRequest(r *http.Request, c *credentials) *jwt
 		return newJwtError(err, 500)
 	}
 
-	csrfString, err := a.extractCsrfStringFromReq(r)
-	if err != nil {
-		return newJwtError(err, 500)
+	var csrfString string
+	if !a.options.DisableCSRF {
+		csrfString, err = a.extractCsrfStringFromReq(r)
+		if err != nil {
+			return newJwtError(err, 500)
+		}
 	}
 
 	err = a.buildCredentialsFromStrings(csrfString, authTokenString, refreshTokenString, c)
